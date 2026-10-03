@@ -1,6 +1,20 @@
 # Permafrost Crash Lab — implementation brief for Codex
 
-Prepared 2026-10-03. This document is an implementation specification, not an implemented or validated application. All proposed commands below are interfaces to build.
+Prepared 2026-10-03. The specification below is preserved as the product brief. A runnable first implementation now lives in this repository; live vendor acceptance remains pending credentials, a user-installed SDK and real crash fixtures.
+
+## Run the implementation
+
+Install Node.js 24.14 or newer, then run `launch.cmd` and open **http://127.0.0.1:4317**. Credentials and private configuration belong in local **`.env`**, which is git-ignored; `.env.example` contains placeholders only. Private reports, SQLite and artifacts default to ignored `.local/data`.
+
+The app implements offline JSON/XML/log/tree/ZIP ingestion, immutable artifact storage, crash signatures and cohort metrics, a read-only BugSplat sync adapter with durable checkpoints, bounded native decoder jobs, reviewed evidence packets, optional validated provider analysis, English/Polish ZIP export, optional exposure CSV and historical read-only source mapping. No demo data is loaded automatically and no real Permafrost root cause is claimed.
+
+- [Windows setup and CLI commands](docs/setup-windows.md)
+- [Implementation plan](docs/implementation-plan.md) and [architecture](docs/architecture.md)
+- [Verified BugSplat interfaces](docs/bugsplat-api-verification.md)
+- [Decoder setup and pending real-dump gate](docs/decoder-compatibility.md)
+- [Acceptance status and limitations](docs/known-limitations.md)
+
+Run `npm run check` for TypeScript, regression tests and the production UI build. Vendor-backed checks remain separate from synthetic regression tests.
 
 ## 1. Mission
 

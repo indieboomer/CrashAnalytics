@@ -1,0 +1,17 @@
+# Architecture
+
+`apps/server` is a Node HTTP server bound to 127.0.0.1; `apps/web` is a React UI compiled by Vite. There is no cloud coordinator. The server validates Host and Origin, requires a random local session token for evidence API access and sends a restrictive CSP. Credentials never enter the browser. The filesystem/SQLite data directory is selected through local .env.
+
+`packages/core` holds configuration, SQLite migration setup, content-addressed objects, bounded subprocesses and durable serial jobs. Objects are hashed before atomic publication. SQLite WAL keeps reports, immutable report revisions, field provenance, attachment associations/statuses, decoder attempts, historical cluster memberships, jobs/checkpoints, source maps, exposure imports, provider audit records and investigation packets. Derived records retain parser/rule versions and can be regenerated from original artifacts. A worker lock prevents multiple orchestrators for one data directory. Jobs recover interrupted running work and resume with overlap.
+
+`packages/ingest` preserves original exports, parses JSON/XML, rejects XML DTD/entities and unsafe/bomb ZIPs, normalizes known aliases and leaves unknown data in raw artifacts. Every extracted evidence item has a source hash, JSON Pointer into parsed JSON/XML, parser version and state. XML queue hierarchy is retained. A current display value does not erase conflicting candidates or historical revisions.
+
+`packages/bugsplat` wraps only verified read operations. The official client handles authentication and list filters. Raw details preserve unknown fields; signed URLs are not persisted. Archives stream to temporary files with byte limits and available content-length verification; expired URLs are refreshed; no auth headers go to S3. SHA-256 deduplicates bytes without deduplicating distinct reports. Page checkpoints follow committed work. Stable ID filters handle pagination; overlapping incremental windows and full reruns reconcile late evidence.
+
+`native/aftermath-decoder` uses user-supplied SDK headers/library/runtime. `packages/decoder` bounds every process, records failures, stores raw/normalized JSON and fingerprints shader artifact contents. Only observed nodes and vendor fingerprints enter derived evidence. Source mapping coverage is explicitly separate from JSON decode success.
+
+`packages/analysis` classifies broad families separately from stack/fault signatures and stage tags; computes counts, coverage, quantiles, histograms, driver/build/GPU distributions and within-machine comparisons. Exposure CSV cohorts must match exact labels and periods; no crash-only share is presented as a probability.
+
+`packages/ai` prepares minimized packets in code, selects representatives and counterexample families, pseudonymizes machine IDs and redacts excerpts. Optional compatible providers receive only reviewed packets, with request/token/timeout caps. Narrow tools retrieve reviewed IDs only, and tool results are logged. Hypotheses require evidence references and discriminating tests. Export contains a hash manifest, evidence/metrics JSON, CSV, English/Polish Markdown and hypotheses. No dumps or credentials are automatically exported.
+
+`packages/project` verifies exact full historical commits and reads Git objects without checking out or modifying the worktree. It exposes bounded source snippets and diffs, avoiding custom diff drivers and text conversion. Source mappings remain separate from unverified executable/PDB/shader identities.

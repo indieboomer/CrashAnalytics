@@ -1,0 +1,2 @@
+period_start,period_end,build,gpu,driver,sessions,distinct_machine_ids,gameplay_hours
+2026-01-01T00:00:00Z,2026-01-02T00:00:00Z,demo-old,Synthetic GPU A,demo-driver-1,100,20,50

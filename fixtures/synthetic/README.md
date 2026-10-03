@@ -1,0 +1,1 @@
+These reports are invented regression data, not Permafrost incidents or live BugSplat data. Import explicitly with `npm run cli -- import fixtures/synthetic/reports.json --database synthetic`. No real report 23180 or its attachments were supplied.

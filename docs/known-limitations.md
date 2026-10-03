@@ -1,0 +1,16 @@
+# Acceptance and limitations
+
+- M0: official package/documentation contracts inspected; doctor works. Live BugSplat and SDK gates pending external inputs.
+- M1: offline JSON/XML/tree/ZIP imports, provenance, immutable storage, namespace deduplication, attachments and durable sync adapter implemented. Synthetic overlap/reconciliation/failure tests run; live account sync has not.
+- M2: native SDK wrapper and bounded decoder orchestration implemented. Native SDK build and runtime startup verified with the supplied local SDK; real dump decoding pending. Generic SDK exit errors currently retain corrupt-or-unsupported uncertainty. No claim of Linux compatibility.
+- M3: deterministic families/signatures, metrics, coverage, representatives, exposure denominators, reviewed AI packets and ZIP export implemented. Provider behavior tested with a local synthetic server only; no paid provider or factual model quality validated.
+- M4 interfaces: historical build mapping, read-only bounded source and diff API implemented. No automatic full source indexing, Blueprint/uasset analysis, CPU minidump symbolization or game modification/build workflow.
+- Current field aliases cover common UE and BugSplat shapes, not every vendor export schema. Unknown fields remain raw; ambiguous attachments remain unassociated. Versioned log parsing extracts recognized key/value fields, explicit error lines and UE callstack lines with line ranges; other log content remains raw.
+- BugSplat attachment discovery uses the documented signed bundle. Selective policies still transfer/preserve the raw archive. Representative binary materialization currently uses the first bounded report set, while investigation representatives span observed machine/build/GPU/driver/signature cohorts.
+- Incremental synchronization overlaps 48 hours; arbitrary older enrichment requires periodically rerunning a full backfill. Retry-After access depends on SDK response metadata. There is no guaranteed vendor-wide quota or total-count endpoint assumed.
+- The worker is serial, cancellation occurs at bounded async operation/report boundaries. A synchronous import cannot be interrupted midway; committed prior records remain. A single archive is bounded at 256 MiB compressed and 512 MiB total expanded; large imports should be split. Quota accounts for objects, not DB/temporary overhead.
+- The first UI covers core workflow and bounded historical source reads/diffs, not a complete source-navigation editor. Data directory selection is local .env plus restart.
+- AI grounding validation checks supplied IDs/schema, not semantic truth or every narrative factual subclaim. Confidence is qualitative. Tool retrieval stays inside reviewed packets; broader source tools require a future explicit source-payload policy.
+- English and Polish narrative reports are supported; evidence excerpts/technical fields and provider-generated hypotheses keep their original language.
+- Local .env uses filesystem permissions rather than encrypted OS credential storage. Export applies minimization/redaction, but reviewing excerpts before deliberate external sharing remains necessary.
+- Proprietary SDK/runtime files, real crash artifacts and credentials are absent from the repository. No real Permafrost findings or root cause are asserted.

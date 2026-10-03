@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+.local/
+*.tgz
+*.db
+*.db-wal
+*.db-shm
+native/aftermath-decoder/build/
+coverage/

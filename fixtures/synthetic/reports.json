@@ -1,0 +1,5 @@
+[
+  {"id":1,"database":"synthetic","appName":"SyntheticDemo","appVersion":"demo-old","crashTime":"2026-01-01T12:00:00Z","machineId":"synthetic-A","gpu":"Synthetic GPU A","driver":"demo-driver-1","SecondsSinceStart":159,"exceptionMessage":"GPU Crash dump Triggered","callstack":"ReportGPUCrash\nRenderGraph::Execute"},
+  {"id":2,"database":"synthetic","appName":"SyntheticDemo","appVersion":"demo-new","crashTime":"2026-01-02T12:00:00Z","machineId":"synthetic-A","gpu":"Synthetic GPU A","driver":"demo-driver-2","SecondsSinceStart":120,"exceptionMessage":"GPU Crash dump Triggered","callstack":"ReportGPUCrash\nRenderGraph::Execute"},
+  {"id":3,"database":"synthetic","appName":"SyntheticDemo","appVersion":"demo-new","crashTime":"2026-01-02T13:00:00Z","gpu":"Synthetic GPU B","driver":"demo-driver-2","exceptionMessage":"Access violation","callstack":"Actor::Tick\nWorld::Tick"}
+]
