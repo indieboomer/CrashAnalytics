@@ -10,7 +10,7 @@ import { summarize,classify } from '../packages/analysis/index.ts';
 import { packet,exportPacket,validateHypotheses,redact,analyze } from '../packages/ai/index.ts';
 import { importExposure,exposureMetrics } from '../packages/analysis/exposure.ts';
 import { createServer } from 'node:http';
-import { sync,retry,HttpError,type Vendor } from '../packages/bugsplat/index.ts';
+import { sync,retry,HttpError,createVendor,type Vendor } from '../packages/bugsplat/index.ts';
 import { boundedProcess } from '../packages/core/process.ts';
 import { sourceSnippet,linkBuild } from '../packages/project/index.ts';
 const temp=()=>mkdtempSync(join(tmpdir(),'crashlab-test-'));
@@ -87,6 +87,20 @@ test('expired signed URL is refreshed without losing associated artifacts',fixtu
 }));
 test('HTTP 429 respects Retry-After and account auth errors do not retry',async()=>{
   let attempts=0;const waits:number[]=[];await retry(async()=>{if(++attempts===1)throw new HttpError(429,'2');return true;},undefined,async ms=>{waits.push(ms);});assert.deepEqual(waits,[2000]);let authCalls=0;await assert.rejects(retry(async()=>{authCalls++;throw new HttpError(401,null);},undefined,async()=>{}));assert.equal(authCalls,1);
+});
+test('official BugSplat client listing route is permitted while report mutations stay blocked',async()=>{
+  const requests:{route:string,method:string}[]=[];
+  const client={createFormData:()=>new FormData(),async fetch(route:string,init:any){requests.push({route,method:init.method});return new Response(JSON.stringify(route.startsWith('/api/crash/details')?{id:1,unknownField:'retained'}:{rows:[{id:'1',appName:'SyntheticDemo',appVersion:'demo'}],pageData:{}}),{status:200,headers:{'Content-Type':'application/json'}});}};
+  const adapter=createVendor(client);
+  const rows=await adapter.list({database:'synthetic',attachments:'metadata'},0);assert.equal(rows.length,1);assert.deepEqual(requests[0],{route:'/api/crashes.php',method:'POST'});
+  const detail=await adapter.details('synthetic',1);assert.equal(detail.unknownField,'retained');
+  await assert.rejects(client.fetch('/api/crashes.php',{method:'DELETE'}),/not allowlisted/);
+  await assert.rejects(client.fetch('/api/crash/notes',{method:'POST'}),/not allowlisted/);
+  await assert.rejects(client.fetch('/api/crashes.php/other',{method:'POST'}),/not allowlisted/);
+});
+test('OAuth scope denial is actionable without exposing unrelated vendor error fields',async()=>{
+  const client={createFormData:()=>new FormData(),async fetch(){return new Response(JSON.stringify({message:'The access token does not have sufficient scope. Required: restricted',access_token:'must-not-leak'}),{status:403});}};
+  const adapter=createVendor(client);await assert.rejects(adapter.list({database:'synthetic',attachments:'metadata'},0),(error:any)=>{assert.match(error.message,/Required scope: restricted/);assert.ok(!error.message.includes('must-not-leak'));return true;});
 });
 test('optional provider tools are scoped, logged, validated and cached using a synthetic local provider',fixture(async(s)=>{
   ingestReport(s,{id:1,gpu:'Synthetic GPU',exceptionMessage:'GPU Crash dump Triggered'},'synthetic');const p=packet(s);let requests=0;

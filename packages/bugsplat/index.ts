@@ -11,7 +11,7 @@ import { ingestReport, enrich, safeArchive } from '../ingest/index.ts';
 const sdk=createRequire(import.meta.url)('@bugsplat/js-api-client');
 export interface SyncOptions {database:string;application?:string;build?:string;from?:string;to?:string;attachments:'metadata'|'xml-logs'|'representative'|'all';maxPages?:number;afterId?:number;incremental?:boolean;}
 export interface Vendor {list(options:SyncOptions,page:number):Promise<any[]>;details(database:string,id:number):Promise<any>;download(url:string,signal?:AbortSignal):Promise<Buffer>;}
-export class HttpError extends Error {constructor(public status:number,public retryAfter:string|null){super('BugSplat HTTP '+status);}}
+export class HttpError extends Error {constructor(public status:number,public retryAfter:string|null,requiredScope?:string){super(requiredScope?`BugSplat OAuth authenticated, but crash access was denied (HTTP ${status}). Required scope: ${requiredScope}. Update the integration's permissions, or use a supported account login.`:'BugSplat HTTP '+status);}}
 export async function retry<T>(fn:()=>Promise<T>,signal?:AbortSignal,wait=(ms:number)=>new Promise<void>(r=>setTimeout(r,ms))):Promise<T>{
   for(let attempt=0;;attempt++){signal?.throwIfAborted();try{return await fn();}catch(e){if(attempt>=4 || (e instanceof HttpError && ![408,429,500,502,503,504].includes(e.status)))throw e;const ra=e instanceof HttpError?e.retryAfter:null;const delay=ra?(Number.isFinite(Number(ra))?Number(ra)*1000:Math.max(0,Date.parse(ra)-Date.now())):Math.min(30000,500*2**attempt)+Math.random()*250;await wait(Math.min(60000,Math.max(0,delay)));}}
 }
@@ -20,12 +20,21 @@ export async function vendor():Promise<Vendor>{
   if(env.BUGSPLAT_CLIENT_ID && env.BUGSPLAT_CLIENT_SECRET) client=await sdk.OAuthClientCredentialsClient.createAuthenticatedClient(env.BUGSPLAT_CLIENT_ID,env.BUGSPLAT_CLIENT_SECRET);
   else if(env.BUGSPLAT_EMAIL&&env.BUGSPLAT_PASSWORD)client=await sdk.BugSplatApiClient.createAuthenticatedClientForNode(env.BUGSPLAT_EMAIL,env.BUGSPLAT_PASSWORD,'https://app.bugsplat.com');
   else throw new Error('BugSplat unavailable: configure OAuth client credentials or supported email/password locally; SSO password login is not assumed');
+  return createVendor(client);
+}
+export function createVendor(client:any):Vendor {
   const original=client.fetch.bind(client);
   client.fetch=async(route:string,init:any)=>{
     // Only read endpoints are exposed through this adapter. SDK detail POST is a read operation.
-    if(!/^\/api\/crashes(?:\?|$)|^\/api\/crash\/details(?:\?|$)/.test(route))throw new Error('Vendor route not allowlisted');
+    const path=route.split('?')[0],method=(init?.method??'GET').toUpperCase();
+    if(!['/api/crashes','/api/crashes.php','/api/crash/details'].includes(path)||!['GET','POST'].includes(method))throw new Error('Vendor read request not allowlisted');
     const response=await original(route,{...init,signal:AbortSignal.timeout(30000)});
-    if(response.status===401||response.status===403)throw new HttpError(response.status,null);
+    if(response.status===401||response.status===403){
+      let requiredScope:string|undefined;
+      if(response.status===403){const errorBody=await response.json().catch(()=>({}));const message=String(errorBody?.message??errorBody?.error??'');if(/insufficient scope|sufficient scope/i.test(message))requiredScope=message.match(/Required:\s*([a-z][a-z0-9_.:-]{0,80})/i)?.[1];}
+      // Never pass raw vendor error bodies, tokens or account details through to UI/logs.
+      throw new HttpError(response.status,null,requiredScope);
+    }
     if(response.status!==200)throw new HttpError(response.status,response.headers?.get?.('retry-after')??null);
     return response;
   };

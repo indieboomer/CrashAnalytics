@@ -11,7 +11,7 @@ npm run check
 .\launch.cmd
 ```
 
-Open **http://127.0.0.1:4317**. `launch.cmd` creates a blank .env if absent, installs dependencies if missing, builds the React UI and starts the server. `npm start` runs a previously built UI; `npm run dev` runs the same server with TypeScript source. Stop with Ctrl+C. Change `CRASHLAB_PORT` in .env if required.
+Open **http://127.0.0.1:4317**. `launch.cmd` creates a blank .env if absent, stops any existing Crash Lab server from this repository, installs dependencies if missing, builds the React UI and starts a fresh server with current configuration. Other Node applications are not stopped. Interrupted durable jobs recover on startup. `npm start` runs a previously built UI; `npm run dev` runs the same server with TypeScript source. Stop with Ctrl+C. Change `CRASHLAB_PORT` in .env if required.
 
 Choose a data directory with `CRASHLAB_DATA_DIR` in .env and restart. The default is `.local/data`. The database, artifact objects, private machine-pseudonym key and job records are local. Choose an NTFS directory accessible only to your Windows user. The .env file is git-ignored and never served or exported; .env.example contains only placeholders. Never put credentials in React configuration, source files, URLs, fixture files or reports. Values containing spaces can be quoted. Existing process environment values take precedence over .env. Local configuration is plaintext protected by your Windows filesystem permissions, not an OS credential vault.
 
@@ -74,6 +74,8 @@ Required columns: `period_start,period_end,build,gpu,driver`; at least `sessions
 
 - Missing UI: run `npm run build`.
 - Failed password authentication: check account/SSO support and use supported OAuth integration credentials.
+- OAuth HTTP 403 with "Required scope: restricted": credentials authenticated but lack crash-list access. Have an account administrator configure an integration with the required scope and database access, or use supported account login. The app does not change account permissions.
+- Restart did not load credentials: use launch.cmd, which stops this repository's existing server before starting it again. Direct npm start does not replace an already-running worker.
 - Expired attachment URL: the adapter refetches report details once; resume a failed job if needed.
 - Quota: increase `CRASHLAB_QUOTA_MB` or choose a larger private data directory; restart.
 - SDK DLL failure: check AFTERMATH_SDK_PATH points to the matching SDK root; the app adds its lib/x64 or lib DLL directory to the process PATH. Restart after changing .env.

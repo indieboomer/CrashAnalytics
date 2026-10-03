@@ -15,4 +15,6 @@ An isolated localhost application test imports only synthetic fixtures into a te
 
 Native build subsequently verified with the supplied SDK on 2026-10-03 using Visual Studio 2026/MSVC 19.51 and bundled CMake 4.3.1. The executable's runtime probe returned `crashlab-decoder/1 SDK API 539`.
 
+Subsequent BugSplat preview fixes: regression suite expanded to **20 passing tests**, including the official client's legacy read-only POST listing route and safe actionable OAuth scope-denial diagnostics. OAuth credentials authenticated in a live read-only probe; listing returned HTTP 403 requiring the `restricted` scope. No report/attachment retrieval was claimed successful.
+
 Pending external checks: BugSplat authentication and account permissions, real report/archive retrieval, real XML/GPU bytes; successful decoding of a real dump; resolved shader mapping and visual comparison in Nsight; historical executable/PDB/shader identity verification; paid provider output quality. See decoder-compatibility.md and bugsplat-api-verification.md for exact prerequisites.

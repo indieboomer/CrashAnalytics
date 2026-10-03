@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { Store } from './store.ts';
-import { sync, vendor, type SyncOptions } from '../bugsplat/index.ts';
+import { sync, vendor, HttpError, type SyncOptions } from '../bugsplat/index.ts';
 import { decodePending } from '../decoder/index.ts';
 import { importPath } from '../ingest/index.ts';
 import { analyze, packet } from '../ai/index.ts';
@@ -38,6 +38,6 @@ export class Jobs {
       else if(job.kind==='exposure')result=importExposure(this.store,p.path);
       else result=importPath(this.store,p.path,p.database);
       controller.signal.throwIfAborted();checkpoint(result);this.store.db.prepare("UPDATE jobs SET state='complete',updated=? WHERE id=?").run(new Date().toISOString(),job.id);
-    }catch(e){const message=job.kind==='sync'?'Sync incomplete: check local credentials, permissions, network and attachment status; resume retries committed overlap.':job.kind==='ai'?'AI request failed or output validation rejected.':String(e instanceof Error?e.message:e);this.store.db.prepare('UPDATE jobs SET state=?,error=?,updated=? WHERE id=?').run(controller.signal.aborted?'cancelled':'failed',message,new Date().toISOString(),job.id);}finally{this.active.delete(job.id);}
+    }catch(e){const message=job.kind==='sync'?(e instanceof HttpError?e.message:'Sync incomplete: check local credentials, permissions, network and attachment status; resume retries committed overlap.'):job.kind==='ai'?'AI request failed or output validation rejected.':String(e instanceof Error?e.message:e);this.store.db.prepare('UPDATE jobs SET state=?,error=?,updated=? WHERE id=?').run(controller.signal.aborted?'cancelled':'failed',message,new Date().toISOString(),job.id);}finally{this.active.delete(job.id);}
   }}finally{this.running=false;}}
 }
